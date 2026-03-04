@@ -1,17 +1,28 @@
-# ===================================================
-# 🐌 CHALLENGE B — Dockerfile CHƯA TỐI ƯU
-# ===================================================
-# Dockerfile này hoạt động nhưng tạo image RẤT LỚN
-# Nhiệm vụ: Tối ưu để image nhỏ nhất có thể!
-# ===================================================
+# ===============================
+# 🚀 Optimized Dockerfile
+# ===============================
 
-FROM node:20
+# Stage 1: Install dependencies
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY . .
+# Copy package files first (giữ cache)
+COPY package*.json ./
 
-RUN npm install
+# Clean & deterministic install
+RUN npm ci --omit=dev
+# Stage 2: Runtime image
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy node_modules từ stage 1
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy source code
+COPY src ./src
+COPY package.json ./
 
 EXPOSE 3000
 
